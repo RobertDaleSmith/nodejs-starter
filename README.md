@@ -1,7 +1,7 @@
 Node.js Starter Site
 ==========
 
-MongoDB, dust.js, Sass, and bcrypt password protected backend implemented.
+MongoDB, dust.js, Sass, and bcrypt password protected backend.
 ==========
 
 1.)   Create DB on MongoHQ.com and then fill in DB credentials at the top of server.js
