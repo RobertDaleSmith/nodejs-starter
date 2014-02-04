@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+{>"admin/admin_layout.dust"/}
+{~n}<!-- /admin-login.dust -->{~n}
+{<body}
+	
+	<div id="login">
+		<h2>Admin Login</h2>
+		{?session.invalid}
+			<p>{session.invalid}</p>
+		{/session.invalid}
+		<form class="well" method="post" style="width:270px; margin:0 auto" action="/admin/login">
+			<input class="signin span3 form-control" name="admin[id]" type="text" placeholder="ID" />
+			<br>
+			<input class="signin span3 form-control" name="admin[password]" type="password" placeholder="Password" />
+			<br>
+			<button type="submit" class="btn btn-primary">Login</button>{~s}
+		</form>
+	</div> 
+{/body}
