@@ -15,10 +15,10 @@ MongoDB, dust.js, Sass, and bcrypt password protected backend.
 		  type: "super"
 		}
 
-3.)   Run 'npm install'.
+4.)   Run 'npm install'.
 
-4.)   Then run 'node server.js' to start site.
+5.)   Then run 'node server.js' to start site.
 
-5.)   Go to localhost:8008/admin to login with follow:
+6.)   Go to localhost:8008/admin to login with follow:
 		un:	admin
 		ps: password
