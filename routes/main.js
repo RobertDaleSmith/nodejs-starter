@@ -15,5 +15,5 @@ exports.initMain = function( mongo ){
 
 Main.prototype.home = function( req, res, next ){
 	res.locals.randomVar = "look mom it passed to render";
-	res.render('index',  { title: "Chromemote - The Google TV Remote for Chrome", pageName: "home" });	
+	res.render('index',  { title: "Title of your view", pageName: "home" });	
 };
