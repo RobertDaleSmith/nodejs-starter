@@ -74,7 +74,7 @@ mongo.connect(function(err) {
   app.use(multer());
 
 
-  /**old express 4 configs**/
+  /**old express 3 configs**/
   // app.engine('dust', cons.dust);
   // app.set('view options', { pretty: true });
   // app.use(express.logger('dev'));
