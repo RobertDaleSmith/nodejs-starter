@@ -8,7 +8,14 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "express": "*",
+    "express": "4.x",
+    "body-parser": "*",
+    "express-session":"*",
+    "errorhandler":"*",
+    "method-override":"*",
+    "morgan": "*",
+    "serve-favicon": "*",
+    "multer": "*",
     "bcrypt-nodejs": "*",
     "dustjs-linkedin": "*",
     "dustjs-helpers": "*",

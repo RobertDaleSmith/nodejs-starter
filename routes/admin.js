@@ -20,7 +20,7 @@ exports.initAdmin = function( mongo ){
 Admin.prototype.admin = function( req, res ){	
 	var url = 'admin/login';
 	if(req.session.loggedIn){
-		url = 'admin/dashboard';
+		url = '/admin/dashboard';
 		res.locals.section = 'dashboard';
 	}
 	return res.redirect(url);
@@ -39,7 +39,7 @@ Admin.prototype.postLogin = function( req, res ) {
 			req.session.admin = {loggedIn:false};
 			return res.redirect('/admin/login');
 		}
-		var url = 'admin/dashboard';
+		var url = '/admin/dashboard';
 		result.pwd = null;
 		req.session.admin = result;
 		req.session.loggedIn = true;

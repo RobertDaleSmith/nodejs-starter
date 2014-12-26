@@ -1,14 +1,20 @@
 var dbInfo = {
-   name: 'db-name',
-   url: 'server.mongohq.com',
-   port: 10000,
-   username: 'username',
-   password: 'password',
+   name: '<DATABASE NAME>',
+   url: '<MONGO URI>',
+   port: "*",
+   username: '<USERNAME>',
+   password: '<PASSWORD>',
    collections: ["admin-sessions", "admin-users"]
 } //Update this info with mongohq account info.
 
 var express = require('express')
-  , http = require('http')
+  , methodOverride = require('method-override')
+  , session = require('express-session')
+  , bodyParser = require('body-parser')
+  , errorHandler = require('errorhandler')
+  , logger = require('morgan')
+  , favicon = require('serve-favicon')
+  , multer = require('multer')
   , cons = require('consolidate')
   , MongoStore = require( 'connect-mongodb' );
 
@@ -17,8 +23,7 @@ var mongo = new (require('./libs/Mongo').Mongo)(dbInfo);
 
 var sass = require('node-sass');
 
-var conf = (require('fs').existsSync( './dev_conf.js' ) && require('./dev_conf').conf) || 
-           { "port":(process.env.PORT || 8008), "base":"" };
+var conf = { "port":(process.env.PORT || 8000), "base":"" };
 
 //Custom Dust.JS helpers
 var dust = require('dustjs-linkedin');
@@ -38,38 +43,62 @@ dust.helpers.formatIndex = function (chunk, context, bodies, params) {
 
 mongo.connect(function(err) {
 
-  if(err) console.log(err)
+  if(err) console.dir(err)
   // assign dust engine to .dust files
-  app.engine('dust', cons.dust);
+  var template_engine = 'dust';
 
-  app.configure(function(){
-    app.set('view engine', 'dust');
-    app.set('views', __dirname + '/views');
-    app.set('view options', { pretty: true });
-    app.use(express.favicon(__dirname + '/public/images/favicon.ico')); 
-    app.use(express.logger('dev'));
-    app.use(express.compress());
-    app.use(sass.middleware({ src: __dirname + '/private' , dest: __dirname + '/public' , debug: true , outputStyle: 'compressed' , prefix:  '/prefix' }));        
-    app.use(express.static(__dirname + '/public', {redirect: false}));
-    app.use(express.bodyParser({ keepExtensions: true, uploadDir: __dirname + "/tmp" }));
-    app.use(express.methodOverride());
-    app.use(express.cookieParser('RandomNameAdmin'));
-    app.use(express.session({
-        secret: "superSecretAdminPhrase",
-        store: new MongoStore({
-            db: mongo.getDB(),
-            username: dbInfo.username,
-            password: dbInfo.password,
-            collection: 'admin-sessions'
-        }),
-        cookie: { maxAge: 24*60*60*1000 }
-    }));
-    app.use(app.router);
-  });
+  app.set('port', conf.port);
+  app.use(express.static(__dirname + '/public', {redirect: false}));
+  app.use(express.static(__dirname + '/private', {redirect: false}));
+  app.set('template_engine', template_engine);
+  app.set('view engine', template_engine);
+  app.engine(template_engine, cons.dust);
+  app.set('views', __dirname + '/views');
+  app.use(favicon(__dirname + '/public/images/favicon.ico')); 
+  app.use(logger('dev'));
+  app.use(methodOverride());
+  app.use(session({
+    secret: "superSecretAdminPhrase",
+    store: new MongoStore({
+        db: mongo.getDB(),
+        username: dbInfo.username,
+        password: dbInfo.password,
+        collection: 'admin-sessions'
+    }),
+    cookie: { maxAge: 24*60*60*1000 },
+    resave: true,
+    saveUninitialized: true
+  }));
+  app.use(bodyParser.json());
+  app.use(bodyParser.urlencoded({extended:true}));
+  app.use(multer());
 
-  app.configure('development', function(){
-    app.use(express.errorHandler());
-  });
+
+  /**old express 3 configs**/
+  // app.engine('dust', cons.dust);
+  // app.set('view options', { pretty: true });
+  // app.use(express.logger('dev'));
+  // app.use(express.compress());
+  // app.use(sass.middleware({ src: __dirname + '/private' , dest: __dirname + '/public' , debug: true , outputStyle: 'compressed' , prefix:  '/prefix' }));        
+  // app.use(express.static(__dirname + '/public', {redirect: false}));
+  // app.use(express.bodyParser({ keepExtensions: true, uploadDir: __dirname + "/tmp" }));
+  // app.use(express.methodOverride());
+  // app.use(express.cookieParser('RandomNameAdmin'));
+  // app.use(express.session({
+  //     secret: "superSecretAdminPhrase",
+  //     store: new MongoStore({
+  //         db: mongo.getDB(),
+  //         username: dbInfo.username,
+  //         password: dbInfo.password,
+  //         collection: 'admin-sessions'
+  //     }),
+  //     cookie: { maxAge: 24*60*60*1000 }
+  // }));
+  // app.use(app.router);
+
+  if('development' == app.get('env')){
+    app.use(errorHandler());
+  }
 
   var routes = {};
 
@@ -112,7 +141,7 @@ mongo.connect(function(err) {
   app.get( '/', function( req, res, next ) { routes.Main.home( req, res, next ); } );
 
   //Uncomment and use to create admin password, then comment out.
-  app.get( '/createPwd/:pwd', function( req, res, next ) { routes.Admin.createPwd( req, res, next ); } );
+  // app.get( '/createPwd/:pwd', function( req, res, next ) { routes.Admin.createPwd( req, res, next ); } );
 
   app.get( '/admin', function( req, res, next ) { routes.Admin.admin( req, res, next ); } );
   app.get( '/admin/logout', function( req, res, next ) { routes.Admin.logOut( req, res, next ); } );
@@ -127,7 +156,7 @@ mongo.connect(function(err) {
 
   // app.get("/*", function(req, res, next) { next("Could not find page"); }); //Handle 404
 
-  http.createServer(app).listen(conf.port);
+  app.listen(conf.port);
   console.log("Express server listening on port " + conf.port);
   
 });
