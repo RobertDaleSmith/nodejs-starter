@@ -4,21 +4,10 @@ Node.js Starter Site
 MongoDB, dust.js, Sass, and bcrypt password protected backend.
 ==========
 
-1.)   Create DB on MongoHQ.com and then fill in DB credentials at the top of server.js
+1.)   Create DB on compose.io and then fill in DB credentials in /libs/db-info.js
 
-2.)   Create a collections called 'admin-sessions' and 'admin-users'.
+2.)   Run 'npm install'.
 
-3.)   Create document inside 'admin-users' with the following:
-		{
-		  id: "admin",
-		  pwd: "$2a$10$Ts68LOj1yYer.4rEf30oMOobg2HyBXLIePBInq4tR.5N07kjmsKSm",
-		  type: "super"
-		}
+3.)   Then run 'node server.js' to start site.
 
-4.)   Run 'npm install'.
-
-5.)   Then run 'node server.js' to start site.
-
-6.)   Go to localhost:8008/admin to login with follow:
-		un:	admin
-		ps: password
+4.)   Go to localhost:8008/admin to create initial admin user to login.
