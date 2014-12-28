@@ -1,7 +1,8 @@
 "use strict";
-var async = require("async")
-   , util = require('util')
-   ;
+var   async  = require("async")
+	, bcrypt = require('bcrypt-nodejs')
+	, util   = require('util')
+	;
 
 var Admin = function( mongo ) {
 
@@ -27,24 +28,58 @@ Admin.prototype.admin = function( req, res ){
 }
 
 Admin.prototype.login = function( req, res ) {
-	return res.render('admin/login');
+	//Check if any admins have been created yet.
+	this._adminUsers.findAdmins({}, function (error, result) {
+						
+		if( result.length <= 0 ) res.locals.adminZero = true;
+		res.render('admin/login');
+	});
+	
 };
 
 Admin.prototype.postLogin = function( req, res ) {
 	var self = this;
 	var user = req.body['admin'];
-	self._adminUsers.authenticate(user.id, user.password, function (error, result) {
-		console.log(error + "  !!!!");
-		if (error !== null || !result) {
-			req.session.admin = {loggedIn:false};
-			return res.redirect('/admin/login');
-		}
-		var url = '/admin/dashboard';
-		result.pwd = null;
-		req.session.admin = result;
-		req.session.loggedIn = true;
-		res.redirect(url);
-	});
+
+	if(user.confirm_password){
+
+		//create new account and login
+		var newAdmin = {
+			username: user.username,
+			email: user.email,
+			pwd: bcrypt.hashSync(user.password, bcrypt.genSaltSync(10)),
+		};
+		
+		//Store new user in DB.
+		self._adminUsers.addAdmin( newAdmin , function( err, result ){
+			if(result.length == 0){
+				res.send({error: true});
+			} else {
+				var url = '/admin/dashboard';
+				result.pwd = null;
+				req.session.admin = result;
+				req.session.loggedIn = true;
+				res.redirect(url);
+			}
+		});
+
+
+	} else {
+
+		//authenticate and login
+		self._adminUsers.authenticate(user.username, user.password, function (error, result) {
+			if (error !== null || !result) {
+				req.session.admin = {loggedIn:false};
+				return res.redirect('/admin/login');
+			}
+			result.pwd = null;
+			req.session.admin = result;
+			req.session.loggedIn = true;
+			res.redirect('/admin/dashboard');
+		});
+
+	}
+	
 };
 
 Admin.prototype.logOut = function( req, res ) {
@@ -52,7 +87,8 @@ Admin.prototype.logOut = function( req, res ) {
 	req.session.loggedIn = false;
 	res.locals.admin = null;
   	res.locals.loggedIn = false;
-	res.render('admin/login');
+	res.redirect('/admin/login');
+
 };
 
 Admin.prototype.dashboard = function( req, res ){

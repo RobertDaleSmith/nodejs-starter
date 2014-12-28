@@ -8,12 +8,35 @@
 		{?session.invalid}
 			<p>{session.invalid}</p>
 		{/session.invalid}
-		<form class="well" method="post" style="width:270px; margin:0 auto" action="/admin/login">
-			<input class="signin span3 form-control" name="admin[id]" type="text" placeholder="ID" />
-			<br>
-			<input class="signin span3 form-control" name="admin[password]" type="password" placeholder="Password" />
-			<br>
-			<button type="submit" class="btn btn-primary">Login</button>{~s}
-		</form>
+
+		{?adminZero}
+			<form class="well" method="post" style="width:270px; margin:0 auto" action="/admin/login">
+				<fieldset>
+					<span>NEW DEPLOYMENT: Create an admin user account to get started.</span>
+					<br><br>
+					<input class="signin span3 form-control" name="admin[email]" type="email" placeholder="email" required>
+					<br>
+					<input class="signin span3 form-control" name="admin[username]" type="text" placeholder="username" required>
+					<br>
+					<input class="signin span3 form-control" name="admin[password]" id="password" type="password" placeholder="password" required>
+					<br>
+					<input class="signin span3 form-control" name="admin[confirm_password]" id="confirm_password" type="password" placeholder="confirm password" required>
+					<br>
+					<button type="submit" class="btn btn-primary">Create</button>{~s}
+				</fieldset>
+			</form>
+		{:else}
+			<form class="well" method="post" style="width:270px; margin:0 auto" action="/admin/login">
+				<fieldset>
+					<input class="signin span3 form-control" name="admin[username]" type="text" placeholder="username" required>
+					<br>
+					<input class="signin span3 form-control" name="admin[password]" type="password" placeholder="password" required>
+					<br>
+					<button type="submit" class="btn btn-primary">Login</button>{~s}
+				</fieldset>
+			</form>
+		{/adminZero}
+
 	</div> 
 {/body}
+	<script type="text/javascript" src="/js/login_script.js"></script>

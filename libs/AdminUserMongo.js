@@ -19,17 +19,63 @@ var isEmpty = function (obj) {
 	return true;
 }
 
-AdminUserMongo.prototype.authenticate = function (id, password, callback) {
-	this.adminUsers.findOne({id: id}, function (error, user) {
+AdminUserMongo.prototype.authenticate = function (username, password, callback) {
+	this.adminUsers.findOne({username: username}, function (error, user) {
 		if (error !== null || user === null) {
 			return callback(new Error("Username and password did not match!"), null);
 		}
-		// console.log(password);
-		// console.log(user.pwd);
+
 		if (!bcrypt.compareSync(password, user.pwd)) {
 			return callback(new Error("Username and password did not match"));
 		}
 
 		callback(error, user);
 	})
+}
+
+AdminUserMongo.prototype.findAdmins = function( queryIn, callback ){
+	var self = this, query = {}, options = {};
+
+	if( queryIn.options ){
+		options = queryIn.options;
+		delete queryIn.options;
+	}
+
+	if( queryIn && typeof queryIn === 'function' ){
+		callback = queryIn;
+	}
+	else{
+		query = queryIn; 
+	}
+
+	if( !options.sort ){
+		options.sort = { '_id': 1 };
+	}
+	// console.log(options);
+	self.adminUsers.find( query, options, function( err, cursor ){
+
+		if( err ) return callback( err );
+
+		cursor.toArray( function( err, docs ){
+
+			if( err ) return callback( err );
+
+			return callback( err, docs );
+
+		})
+	});
+}
+
+AdminUserMongo.prototype.addAdmin = function ( admin, callback ){
+	if (typeof (admin) === 'function') {
+		callback = admin;
+		admin = null;
+		return callback("Missing arguments");
+	}
+
+	this.adminUsers.insert( admin, {safe:true}, function (error, admins) {
+		console.log(error);
+		console.log(admins);
+		callback(error, admins);
+	});
 }

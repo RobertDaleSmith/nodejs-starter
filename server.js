@@ -1,36 +1,30 @@
-var dbInfo = {
-   name: '<DATABASE NAME>',
-   url: '<MONGO URI>',
-   port: "*",
-   username: '<USERNAME>',
-   password: '<PASSWORD>',
-   collections: ["admin-sessions", "admin-users"]
-} //Update this info with mongohq account info.
 
-var express = require('express')
+var bodyParser     = require('body-parser')
+  , cons           = require('consolidate')
+  , errorHandler   = require('errorhandler')
+  , express        = require('express')
+  , favicon        = require('serve-favicon')
+  , logger         = require('morgan')
+  , MongoStore     = require('connect-mongodb')
   , methodOverride = require('method-override')
-  , session = require('express-session')
-  , bodyParser = require('body-parser')
-  , errorHandler = require('errorhandler')
-  , logger = require('morgan')
-  , favicon = require('serve-favicon')
-  , multer = require('multer')
-  , cons = require('consolidate')
-  , MongoStore = require( 'connect-mongodb' );
+  , multer         = require('multer')
+  , sass           = require('node-sass')
+  , session        = require('express-session')
+  , dbInfo         = require('./libs/db-info.js').dbInfo(["admin-sessions", "admin-users"])
+  ;
+
+if(dbInfo.name == 'DEPLOYMENT_NAME'){ console.log('\n\n MongoDB Info Missing! Create deployment on compose.io and info to /libs/db-info.js.\n\n'); return false; }
 
 var app = express();
+
+var conf = { 'port':(process.env.PORT || 8000), 'base':'' };
+
 var mongo = new (require('./libs/Mongo').Mongo)(dbInfo);
-
-var sass = require('node-sass');
-
-var conf = { "port":(process.env.PORT || 8000), "base":"" };
 
 //Custom Dust.JS helpers
 var dust = require('dustjs-linkedin');
 dust.helper = require('dustjs-helpers');
-  
-if (!dust.helpers)
-  dust.helpers = {};
+if (!dust.helpers) dust.helpers = {};
 
 dust.helpers.formatIndex = function (chunk, context, bodies, params) {
   var text = dust.helpers.tap(params.value, chunk, context);
@@ -58,7 +52,7 @@ mongo.connect(function(err) {
   app.use(logger('dev'));
   app.use(methodOverride());
   app.use(session({
-    secret: "superSecretAdminPhrase",
+    secret: dbInfo.secret,
     store: new MongoStore({
         db: mongo.getDB(),
         username: dbInfo.username,
@@ -73,28 +67,6 @@ mongo.connect(function(err) {
   app.use(bodyParser.urlencoded({extended:true}));
   app.use(multer());
 
-
-  /**old express 3 configs**/
-  // app.engine('dust', cons.dust);
-  // app.set('view options', { pretty: true });
-  // app.use(express.logger('dev'));
-  // app.use(express.compress());
-  // app.use(sass.middleware({ src: __dirname + '/private' , dest: __dirname + '/public' , debug: true , outputStyle: 'compressed' , prefix:  '/prefix' }));        
-  // app.use(express.static(__dirname + '/public', {redirect: false}));
-  // app.use(express.bodyParser({ keepExtensions: true, uploadDir: __dirname + "/tmp" }));
-  // app.use(express.methodOverride());
-  // app.use(express.cookieParser('RandomNameAdmin'));
-  // app.use(express.session({
-  //     secret: "superSecretAdminPhrase",
-  //     store: new MongoStore({
-  //         db: mongo.getDB(),
-  //         username: dbInfo.username,
-  //         password: dbInfo.password,
-  //         collection: 'admin-sessions'
-  //     }),
-  //     cookie: { maxAge: 24*60*60*1000 }
-  // }));
-  // app.use(app.router);
 
   if('development' == app.get('env')){
     app.use(errorHandler());
@@ -157,7 +129,7 @@ mongo.connect(function(err) {
   // app.get("/*", function(req, res, next) { next("Could not find page"); }); //Handle 404
 
   app.listen(conf.port);
-  console.log("Express server listening on port " + conf.port);
+  console.log('Express server listening on port ' + conf.port);
   
 });
 
