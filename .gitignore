@@ -1,8 +1,6 @@
 source
 node_modules
 dev_conf.js
-db-info.js
-libs/db-info.js
 # Compiled source #
 ###################
 *.com
