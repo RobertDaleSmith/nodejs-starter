@@ -4,7 +4,7 @@ Node.js Starter Site
 MongoDB, dust.js, Sass, and bcrypt password protected backend.
 ==========
 
-1.)   Create DB on compose.io and then fill in DB credentials in /libs/db-info.js
+1.)   Create DB on compose.io and then fill in DB credentials in /config/default.json
 
 2.)   Run 'npm install'.
 
@@ -16,4 +16,4 @@ MongoDB, dust.js, Sass, and bcrypt password protected backend.
 
 
 Note:
-git update-index --no-assume-unchanged libs/db-info.js to enable git tracking of db-info.
+git update-index --no-assume-unchanged config/default.json to enable git tracking of db-info.
