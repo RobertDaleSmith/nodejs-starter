@@ -23,7 +23,8 @@
     "mongodb": "*",
     "connect-mongodb": "*",
     "async": "*",
-    "node-sass":"0.8.1"
+    "node-sass":"0.8.1",
+    "config":"*"
   },
   "devDependencies": {
     "mocha": "*",

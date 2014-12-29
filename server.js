@@ -1,6 +1,7 @@
 
 var bodyParser     = require('body-parser')
   , cons           = require('consolidate')
+  , config         = require('config')
   , errorHandler   = require('errorhandler')
   , express        = require('express')
   , favicon        = require('serve-favicon')
@@ -10,10 +11,10 @@ var bodyParser     = require('body-parser')
   , multer         = require('multer')
   , sass           = require('node-sass')
   , session        = require('express-session')
-  , dbInfo         = require('./libs/db-info.js').dbInfo(["admin-sessions", "admin-users"])
   ;
 
-if(dbInfo.name == 'DEPLOYMENT_NAME'){ console.log('\n\n MongoDB Info Missing! Create deployment on compose.io and info to /libs/db-info.js.\n\n'); return false; }
+var dbInfo = config.get('dbConfig')
+if( dbInfo.name == 'DEPLOYMENT_NAME' ){ console.log('\n\n MongoDB Info Missing! Create deployment on compose.io and info to /libs/db-info.js.\n\n'); return false; }
 
 var app = express();
 
