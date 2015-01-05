@@ -1,4 +1,3 @@
-
 var bodyParser     = require('body-parser')
   , cons           = require('consolidate')
   , config         = require('config')
@@ -11,9 +10,13 @@ var bodyParser     = require('body-parser')
   , multer         = require('multer')
   , sass           = require('node-sass')
   , session        = require('express-session')
+  , cookieParser   = require('cookie-parser')
+  , flash          = require('connect-flash')
   ;
 
-var dbInfo = config.get('dbConfig')
+var dbInfo = config.get('dbConfig');
+    dbInfo.collections = [ "admin-sessions", "admin-users", "end-users" ];
+
 if( dbInfo.name == 'DEPLOYMENT_NAME' ){ console.log('\n\n MongoDB Info Missing! Create deployment on compose.io and info to /libs/db-info.js.\n\n'); return false; }
 
 var app = express();
@@ -49,9 +52,10 @@ mongo.connect(function(err) {
   app.set('view engine', template_engine);
   app.engine(template_engine, cons.dust);
   app.set('views', __dirname + '/views');
-  app.use(favicon(__dirname + '/public/images/favicon.ico')); 
+  app.use(favicon(__dirname + '/public/favicon.ico')); 
   app.use(logger('dev'));
   app.use(methodOverride());
+  app.use(cookieParser(dbInfo.secret));
   app.use(session({
     secret: dbInfo.secret,
     store: new MongoStore({
@@ -64,10 +68,10 @@ mongo.connect(function(err) {
     resave: true,
     saveUninitialized: true
   }));
+  app.use(flash());
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({extended:true}));
   app.use(multer());
-
 
   if('development' == app.get('env')){
     app.use(errorHandler());
@@ -75,14 +79,14 @@ mongo.connect(function(err) {
 
   var routes = {};
 
-  var Main = require('./routes/main.js').initMain;
-  routes.Main = new Main(mongo) ;
+  var Index = require('./routes/index.js').initIndex;
+  routes.Index = new Index(mongo);
 
   var Admin = require('./routes/admin.js').initAdmin;
   routes.Admin = new Admin(mongo);
 
   /* Middlewares */
-  function requiresLogin(req, res, next) {
+  function requiresAdminLogin(req, res, next) {
     if( req.session.admin && req.session.loggedIn ){
         next();
     }
@@ -102,33 +106,39 @@ mongo.connect(function(err) {
   };
   
   // /* Dynamic helpers */
-  app.all('/admin/*', function( req, res, next ) {
-    if( req.session.admin ){
-      res.locals.admin = req.session.admin;
-      res.locals.loggedIn = true;
-      console.log('loggedIn');
-    }
-    next();
-  });
+  // app.all('/admin/*', function( req, res, next ) {
+  //   if( req.session.admin ){
+  //     res.locals.admin = req.session.admin;
+  //     res.locals.loggedIn = true;
+  //     console.log('loggedIn');
+  //   }
+  //   next();
+  // });
 
-  app.get( '/', function( req, res, next ) { routes.Main.home( req, res, next ); } );
+  app.get( '/', function( req, res, next ) { routes.Index.home( req, res, next ); } );
 
   //Uncomment and use to create admin password, then comment out.
   // app.get( '/createPwd/:pwd', function( req, res, next ) { routes.Admin.createPwd( req, res, next ); } );
 
-  app.get( '/admin', function( req, res, next ) { routes.Admin.admin( req, res, next ); } );
-  app.get( '/admin/logout', function( req, res, next ) { routes.Admin.logOut( req, res, next ); } );
-  app.get( '/admin/login', function( req, res, next ) { routes.Admin.login( req, res, next ); } );
-  app.post('/admin/login', function( req, res, next ) { routes.Admin.postLogin( req, res, next ); });  
+  // Admin dashboard routes.
+  app.get( '/admin/login', function( req, res, next ) { routes.Admin.login(     req, res, next ); } );
+  app.post('/admin/login', function( req, res, next ) { routes.Admin.postLogin( req, res, next ); } );
+  app.get( '/admin/logout',function( req, res, next ) { routes.Admin.logOut(    req, res, next ); } );  
   
-  app.get( '/admin/dashboard', requiresLogin, function( req, res, next ) { routes.Admin.dashboard( req, res, next ); } );  
+  app.get( '/admin', requiresAdminLogin, function( req, res, next ) { routes.Admin.home(  req, res, next ); } );
+  app.get( '/admin/admins', requiresAdminLogin, function( req, res, next ) { routes.Admin.adminUsers( req, res, next ); } );
+  app.get( '/admin/users',  requiresAdminLogin, function( req, res, next ) { routes.Admin.endUsers( req, res, next ); } );
+
+  app.post( '/admin/admins/add', requiresLoginAjax, function( req, res, next ) { routes.Admin.addAdmin( req, res, next ); } );
+  app.post( '/admin/admins/update', requiresLoginAjax, function( req, res, next ) { routes.Admin.updateAdmin( req, res, next ); } );
+  app.get( '/admin/admins/remove/:id', requiresAdminLogin, function( req, res, next ) { routes.Admin.removeAdmin( req, res, next ); } );
+  // app.get( '/admin/bcrypt/:pwd', requiresAdminLogin, function( req, res, next ) { routes.Admin.createPwd(req, res, next ); } );
 
   app.get( '/admin/js/:scriptFileName', requiresLoginAjax, function( req, res, next ) { routes.Admin.privateScript( req, res, next ); } ); 
   app.get( '/admin/css/:styleFileName' , requiresLoginAjax, function( req, res, next ) { routes.Admin.privateStyle( req, res, next );  } ); 
-  app.get( '/admin/images/:imageFileName' , requiresLoginAjax, function( req, res, next ) { routes.Admin.privateImage( req, res, next );  } ); 
+  app.get( '/admin/images/:imageFileName', requiresLoginAjax, function( req, res, next ) { routes.Admin.privateImage( req, res, next );  } ); 
 
   // app.get("/*", function(req, res, next) { next("Could not find page"); }); //Handle 404
-
   app.listen(conf.port);
   console.log('Express server listening on port ' + conf.port);
   

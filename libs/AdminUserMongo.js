@@ -22,11 +22,11 @@ var isEmpty = function (obj) {
 AdminUserMongo.prototype.authenticate = function (username, password, callback) {
 	this.adminUsers.findOne({username: username}, function (error, user) {
 		if (error !== null || user === null) {
-			return callback(new Error("Username and password did not match!"), null);
+			return callback(new Error("Username and password did not match"), null);
 		}
 
 		if (!bcrypt.compareSync(password, user.pwd)) {
-			return callback(new Error("Username and password did not match"));
+			return callback(new Error("Username and password did not match!"));
 		}
 
 		callback(error, user);
@@ -74,8 +74,28 @@ AdminUserMongo.prototype.addAdmin = function ( admin, callback ){
 	}
 
 	this.adminUsers.insert( admin, {safe:true}, function (error, admins) {
-		console.log(error);
-		console.log(admins);
+		if(error) console.log(error);
 		callback(error, admins);
 	});
+}
+
+AdminUserMongo.prototype.removeAdmin = function ( admin, callback ){
+	console.log(admin);
+	this.adminUsers.remove( admin, function (error, result) {
+		if(error) console.log(error);
+		callback(error, result);
+	});
+
+}
+
+
+AdminUserMongo.prototype.updateAdmin = function ( admin, set, callback ){
+	// console.log(admin);
+
+	this.adminUsers.update(	{_id: admin._id }, { $set: set }, 
+		function(err, result) {
+			callback(err, result);
+		}
+  	);
+
 }

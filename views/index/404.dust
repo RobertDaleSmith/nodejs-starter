@@ -1,0 +1,14 @@
+{>"layouts/main_index"/}
+
+{<title}{title}{/title}
+
+{<html_body}
+
+	<div id="wrapper">
+
+		<h1 class="page-header">404 (Not Found)</h1>
+		<span>{.pagePath}</span>
+
+	</div>
+
+{/html_body}

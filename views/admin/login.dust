@@ -1,42 +1,91 @@
-<!DOCTYPE html>
-{>"admin/admin_layout.dust"/}
-{~n}<!-- /admin-login.dust -->{~n}
-{<body}
+{>"layouts/main_admin"/}
+
+{<title}{title}{/title}
+
+{<html_body}
 	
-	<div id="login">
-		<h2>Admin Login</h2>
-		{?session.invalid}
-			<p>{session.invalid}</p>
-		{/session.invalid}
+	<div class="container">
+		<div class="row">
+			<div class="col-md-4 col-md-offset-4">
+				<div class="login-panel panel panel-default">
+					<div class="panel-heading">
+						<h3 class="panel-title">Admin Sign In</h3>
+					</div>
+					<div class="panel-body">
+						<form action="/admin/login" method="POST" role="form">
+							<fieldset>
 
-		{?adminZero}
-			<form class="well" method="post" style="width:270px; margin:0 auto" action="/admin/login">
-				<fieldset>
-					<span>NEW DEPLOYMENT: Create an admin user account to get started.</span>
-					<br><br>
-					<input class="signin span3 form-control" name="admin[email]" type="email" placeholder="email" required>
-					<br>
-					<input class="signin span3 form-control" name="admin[username]" type="text" placeholder="username" required>
-					<br>
-					<input class="signin span3 form-control" name="admin[password]" id="password" type="password" placeholder="password" required>
-					<br>
-					<input class="signin span3 form-control" name="admin[confirm_password]" id="confirm_password" type="password" placeholder="confirm password" required>
-					<br>
-					<button type="submit" class="btn btn-primary">Create</button>{~s}
-				</fieldset>
-			</form>
-		{:else}
-			<form class="well" method="post" style="width:270px; margin:0 auto" action="/admin/login">
-				<fieldset>
-					<input class="signin span3 form-control" name="admin[username]" type="text" placeholder="username" required>
-					<br>
-					<input class="signin span3 form-control" name="admin[password]" type="password" placeholder="password" required>
-					<br>
-					<button type="submit" class="btn btn-primary">Login</button>{~s}
-				</fieldset>
-			</form>
-		{/adminZero}
+								{?adminZero}
+									<span>NEW DEPLOYMENT: Create an admin user account to get started.</span>
+									<br><br>
+									<div class="form-group">
+										<input class="form-control" placeholder="email" name="admin[email]" type="email" required autofocus>
+									</div>
+									<div class="form-group">
+										<input class="form-control" placeholder="username" name="admin[username]" type="text" pattern=".{2,}" required title="2 characters minimum">
+									</div>
+									<div class="form-group">
+										<input class="form-control" placeholder="password" id="password" name="admin[password]" type="password" pattern=".{6,}" required title="6 characters minimum" value="">
+									</div>
+									<div class="form-group">
+										<input class="form-control" placeholder="confirm password" id="confirm_password" name="admin[confirm_password]" type="password" required pattern=".{6,}" value="">
+									</div>
+									<div class="checkbox">
+										<label>
+											<input name="admin[remember]" type="checkbox" value="true">Remember Me
+										</label>
+									</div>
+									<button class="btn btn-lg btn-success btn-block" type="submit">Create</button>
+								{:else}
+									<div class="form-group">
+										<input class="form-control" placeholder="username" name="admin[username]" type="text" required="" autofocus>
+									</div>
+									<div class="form-group">
+										<input class="form-control" placeholder="password" name="admin[password]" type="password" required="" value="">
+									</div>
 
-	</div> 
-{/body}
-	<script type="text/javascript" src="/js/login_script.js"></script>
+									<span class="error">{#error}{.}{/error}</span>
+
+									<div class="checkbox">
+										<label>
+											<input name="admin[remember]" type="checkbox" value="true" checked>Remember Me
+										</label>
+									</div>
+									<button class="btn btn-lg btn-success btn-block" type="submit">Login</button>
+								{/adminZero}
+							</fieldset>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+{/html_body}
+
+{<bodyScripts}
+  	<!-- Login Validation JavaScript -->
+	<script>
+		$( document ).ready(function() {
+    
+		    initPasswordValidation();
+
+		});
+
+		function initPasswordValidation(){
+			var password 	 = document.getElementById("password"), 
+			confirm_password = document.getElementById("confirm_password");
+
+			password.onchange = validatePassword;
+			confirm_password.onkeyup = validatePassword;
+		}
+
+		function validatePassword(){
+			if(password.value != confirm_password.value) {
+				confirm_password.setCustomValidity("Passwords Don't Match");
+			} else {
+				confirm_password.setCustomValidity('');
+			}
+		}
+	</script>
+{/bodyScripts}

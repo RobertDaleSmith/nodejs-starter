@@ -1,9 +1,0 @@
-{>"layout.dust"/}
-
-{<body}
-
-	<div id="main_content">
-        Main page content here. <br><br>
-    </div>
-        
-{/body}

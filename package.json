@@ -24,7 +24,9 @@
     "connect-mongodb": "*",
     "async": "*",
     "node-sass":"0.8.1",
-    "config":"*"
+    "config":"*",
+    "cookie-parser": "^1.0.1",
+    "connect-flash": "^0.1.1"
   },
   "devDependencies": {
     "mocha": "*",

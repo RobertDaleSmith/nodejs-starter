@@ -1,0 +1,10 @@
+{>"layouts/main_index"/}
+
+{<title}{title}{/title}
+
+{<html_body}
+
+	<!-- index/home.dust -->
+	<br><a href="#">BODY</a><br>
+
+{/html_body}
