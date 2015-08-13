@@ -71,7 +71,7 @@ mongo.connect(function(err) {
   app.use(flash());
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({extended:true}));
-  app.use(multer());
+  app.use(multer({dest:'./uploads/'}).single('singleInputFileName'));
 
   if('development' == app.get('env')){
     app.use(errorHandler());
